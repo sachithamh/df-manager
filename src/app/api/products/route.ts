@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
-import { auth } from "../../../firebase";
-import { getApps } from "firebase/app";
-
-// Helper to get Firestore instance
-function getDB() {
-  if (!getApps().length) throw new Error("Firebase not initialized");
-  return getFirestore();
-}
+import { collection, addDoc, getDocs } from "firebase/firestore";
+import { db } from "../../../firebase";
 
 // GET: List all products
 export async function GET() {
-  const db = getDB();
   const productsCol = collection(db, "products");
   const snapshot = await getDocs(productsCol);
   const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -20,15 +12,22 @@ export async function GET() {
 
 // POST: Add a new product
 export async function POST(req: NextRequest) {
-  const db = getDB();
-  const { name, description } = await req.json();
-  const docRef = await addDoc(collection(db, "products"), {
-    name,
-    description,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    variants: [],
-    history: [],
-  });
-  return NextResponse.json({ id: docRef.id });
+  try {
+    const { name, description } = await req.json();
+    if (!name || !description) {
+      return NextResponse.json({ error: "Missing name or description" }, { status: 400 });
+    }
+    const docRef = await addDoc(collection(db, "products"), {
+      name,
+      description,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      variants: [],
+      history: [],
+    });
+    return NextResponse.json({ id: docRef.id });
+  } catch (err: any) {
+    console.error("Error creating product:", err);
+    return NextResponse.json({ error: err.message || "Unknown error" }, { status: 500 });
+  }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function AddProductPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [sku, setSku] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function AddProductPage() {
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({ name, description, sku }),
       });
       if (!res.ok) throw new Error(await res.text() || "Failed to create product");
       router.push("/products");
@@ -53,6 +54,16 @@ export default function AddProductPage() {
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <div>
+          <label className="block font-medium mb-2">SKU</label>
+          <input
+            type="text"
+            value={sku}
+            onChange={e => setSku(e.target.value)}
             required
             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />

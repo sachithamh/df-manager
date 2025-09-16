@@ -1,14 +1,15 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { v4 as uuidv4 } from "uuid";
 
 export default function ProductManagePage() {
   const router = useRouter();
   const params = useParams();
   const productId = params?.id as string;
   const [product, setProduct] = useState<any>(null);
+  const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [variantName, setVariantName] = useState("");
@@ -17,17 +18,23 @@ export default function ProductManagePage() {
   const [saving, setSaving] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
 
+  // Fetch product info
   useEffect(() => {
     if (!productId) return;
     setLoading(true);
-    fetch(`/api/products/${productId}`)
-      .then(async res => {
+    Promise.all([
+      fetch(`/api/products/${productId}`).then(async res => {
         if (!res.ok) throw new Error(await res.text() || "Failed to fetch product");
         return res.json();
+      }),
+      fetch(`/api/products/${productId}/variants`).then(async res => {
+        if (!res.ok) throw new Error(await res.text() || "Failed to fetch variants");
+        return res.json();
       })
-      .then(data => {
-        setProduct(data);
-        setHistory(data.history || []);
+    ])
+      .then(([productData, variantsData]) => {
+        setProduct(productData);
+        setVariants(variantsData);
         setLoading(false);
       })
       .catch(err => {
@@ -50,10 +57,9 @@ export default function ProductManagePage() {
       setVariantName("");
       setVariantSku("");
       setVariantQty(0);
-      // Refresh product
-      const updated = await fetch(`/api/products/${productId}`).then(r => r.json());
-      setProduct(updated);
-      setHistory(updated.history || []);
+      // Refresh variants
+      const updatedVariants = await fetch(`/api/products/${productId}/variants`).then(r => r.json());
+      setVariants(updatedVariants);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -88,7 +94,7 @@ export default function ProductManagePage() {
                 </tr>
               </thead>
               <tbody>
-                {(product.variants || []).map((variant: any) => (
+                {variants.map((variant: any) => (
                   <tr key={variant.id}>
                     <td className="py-2 px-4 border-b font-medium">{variant.name}</td>
                     <td className="py-2 px-4 border-b">{variant.sku || "-"}</td>
@@ -113,20 +119,6 @@ export default function ProductManagePage() {
               <button type="submit" className="bg-blue-600 text-white rounded px-4 py-2 font-semibold hover:bg-blue-700" disabled={saving}>{saving ? "Adding..." : "Add Variant"}</button>
             </form>
             {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-bold mb-2">Update History</h3>
-            {history.length === 0 ? (
-              <div className="text-gray-400">No history yet.</div>
-            ) : (
-              <ul className="text-sm text-gray-700 space-y-1">
-                {history.slice().reverse().map((h, i) => (
-                  <li key={i}>
-                    <span className="font-semibold">{h.type}</span> - {h.variantId ? `Variant: ${h.variantId}` : ""} {h.prevQuantity !== undefined ? `from ${h.prevQuantity} to ${h.newQuantity}` : ""} {h.updatedBy ? `by ${h.updatedBy}` : ""} at {new Date(h.updatedAt || h.addedAt).toLocaleString()}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         </>
       ) : null}

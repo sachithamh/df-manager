@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import Drawer from "./components/Drawer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,9 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-blue-100 via-white to-blue-200`}
       >
-        {children}
+        <div className="flex flex-row min-h-screen">
+          <Drawer />
+          <main className="flex-1 flex flex-col pt-4 transition-all duration-300">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );

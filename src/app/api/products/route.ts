@@ -13,17 +13,16 @@ export async function GET() {
 // POST: Add a new product
 export async function POST(req: NextRequest) {
   try {
-    const { name, description } = await req.json();
-    if (!name || !description) {
-      return NextResponse.json({ error: "Missing name or description" }, { status: 400 });
+    const { name, description, sku } = await req.json();
+    if (!name || !description || !sku) {
+      return NextResponse.json({ error: "Missing name, description, or sku" }, { status: 400 });
     }
     const docRef = await addDoc(collection(db, "products"), {
       name,
       description,
+      sku,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      variants: [],
-      history: [],
     });
     return NextResponse.json({ id: docRef.id });
   } catch (err: any) {

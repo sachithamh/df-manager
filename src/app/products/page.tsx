@@ -6,6 +6,7 @@ type Product = {
   id: string;
   name: string;
   description: string;
+  sku: string;
 };
 
 export default function ProductsPage() {
@@ -55,6 +56,7 @@ export default function ProductsPage() {
               <tr>
                 <th className="py-2 px-4 border-b">Name</th>
                 <th className="py-2 px-4 border-b">Description</th>
+                <th className="py-2 px-4 border-b">SKU</th>
                 <th className="py-2 px-4 border-b">Actions</th>
               </tr>
             </thead>
@@ -63,6 +65,7 @@ export default function ProductsPage() {
                 <tr key={product.id}>
                   <td className="py-2 px-4 border-b font-medium">{product.name}</td>
                   <td className="py-2 px-4 border-b">{product.description}</td>
+                  <td className="py-2 px-4 border-b">{product.sku}</td>
                   <td className="py-2 px-4 border-b">
                     <Link href={`/products/${product.id}`}>
                       <button className="bg-blue-500 text-white rounded px-3 py-1 text-sm hover:bg-blue-600">Variants</button>
